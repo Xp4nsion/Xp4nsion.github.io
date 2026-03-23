@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SugarQueue to Clicks — Digitizing the Sugarcane Supply Chain</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Playfair Display', 'serif'],
+          mono: ['DM Mono', 'monospace'],
+        },
+        colors: {
+          forest: { 950:'#0b1610', 900:'#111e17', 800:'#1a3a2a', 700:'#2d6a4f', 500:'#52b788', 300:'#95d5b2' },
+          gold: { DEFAULT:'#e9a818', light:'#f5c842', pale:'#fdf6e3' },
+        },
+        keyframes: {
+          fadeUp:   { '0%':{ opacity:'0', transform:'translateY(20px)' }, '100%':{ opacity:'1', transform:'translateY(0)' } },
+          fadeIn:   { '0%':{ opacity:'0' }, '100%':{ opacity:'1' } },
+          blink:    { '0%,100%':{ opacity:'1', transform:'scale(1)' }, '50%':{ opacity:'0.4', transform:'scale(1.5)' } },
+          floatY:   { '0%,100%':{ transform:'translateY(0)' }, '50%':{ transform:'translateY(-10px)' } },
+          floatYd:  { '0%,100%':{ transform:'translateY(0)' }, '50%':{ transform:'translateY(-10px)' } },
+          slideIn:  { '0%':{ opacity:'0', transform:'translateX(16px)' }, '100%':{ opacity:'1', transform:'translateX(0)' } },
+        },
+        animation: {
+          'fade-up':  'fadeUp .55s ease both',
+          'fade-up1': 'fadeUp .55s .08s ease both',
+          'fade-up2': 'fadeUp .55s .16s ease both',
+          'fade-up3': 'fadeUp .55s .24s ease both',
+          'fade-in':  'fadeIn .4s ease both',
+          'blink':    'blink 2s ease infinite',
+          'float':    'floatY 4s ease-in-out infinite',
+          'float-d':  'floatYd 4s 2s ease-in-out infinite',
+          'slide-in': 'slideIn .4s ease both',
+        },
+      },
+    },
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'DM Sans', sans-serif; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeUp .45s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+
+  .hero-mesh   { background: radial-gradient(ellipse 60% 80% at 70% 50%,rgba(82,183,136,.10) 0%,transparent 70%), radial-gradient(ellipse 40% 60% at 15% 85%,rgba(233,168,24,.07) 0%,transparent 60%), #1a3a2a; }
+  .dark-mesh   { background: radial-gradient(ellipse 50% 60% at 90% 20%,rgba(82,183,136,.06) 0%,transparent 60%), #111e17; }
+  .amber-mesh  { background: radial-gradient(ellipse 50% 50% at 10% 80%,rgba(233,168,24,.06) 0%,transparent 60%), #111e17; }
+  .footer-mesh { background: radial-gradient(ellipse 70% 60% at 50% 50%,rgba(82,183,136,.07) 0%,transparent 70%), #0b1610; }
+
+  .phone-notch { width:72px; height:16px; background:#111; border-radius:0 0 9px 9px; margin:0 auto 4px; }
+
+  .nav-btn.active { color:#fdf6e3; background:rgba(255,255,255,.07); }
+  .nav-btn.active .nav-dot { opacity:1; }
+  .nav-dot { opacity:0; transition:opacity .2s; }
+
+  #mobile-menu { display:none; }
+  #mobile-menu.open { display:flex; }
+
+  .page-scroll { height: calc(100vh - 64px); overflow-y: auto; overflow-x: hidden; }
+  .page-scroll::-webkit-scrollbar { width: 4px; }
+  .page-scroll::-webkit-scrollbar-track { background: transparent; }
+  .page-scroll::-webkit-scrollbar-thumb { background: rgba(82,183,136,.3); border-radius: 4px; }
+</style>
+</head>
+<body class="bg-forest-800 text-gold-pale overflow-hidden h-screen flex flex-col">
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="flex-shrink-0 h-16 flex items-center border-b border-white/[.07] bg-forest-900/80 backdrop-blur-xl z-50 relative">
+  <div class="w-full max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between gap-4">
+
+    <button onclick="showPage('home')" class="flex items-center gap-2.5 group flex-shrink-0">
+      <div class="w-8 h-8 rounded-lg bg-gold/20 border border-gold/30 flex items-center justify-center text-sm group-hover:bg-gold/30 transition-colors duration-200">🌿</div>
+      <span class="font-display font-bold text-[17px] tracking-tight">SugarQueue <em class="not-italic text-gold">to Clicks</em></span>
+    </button>
+
+    <div class="hidden md:flex items-center gap-1 bg-white/[.04] border border-white/[.07] rounded-2xl p-1">
+      <button onclick="showPage('home')"     class="nav-btn active  relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-gold-pale/60 hover:text-gold-pale transition-all duration-150" data-page="home">
+        <span class="nav-dot w-1 h-1 rounded-full bg-gold absolute -top-0.5 -right-0.5"></span>
+        🏠 Home
+      </button>
+      <button onclick="showPage('problem')"  class="nav-btn relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-gold-pale/60 hover:text-gold-pale transition-all duration-150" data-page="problem">
+        <span class="nav-dot w-1 h-1 rounded-full bg-gold absolute -top-0.5 -right-0.5"></span>
+        ⚠️ Problem
+      </button>
+      <button onclick="showPage('features')" class="nav-btn relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-gold-pale/60 hover:text-gold-pale transition-all duration-150" data-page="features">
+        <span class="nav-dot w-1 h-1 rounded-full bg-gold absolute -top-0.5 -right-0.5"></span>
+        ✨ Features
+      </button>
+      <button onclick="showPage('impact')"   class="nav-btn relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-gold-pale/60 hover:text-gold-pale transition-all duration-150" data-page="impact">
+        <span class="nav-dot w-1 h-1 rounded-full bg-gold absolute -top-0.5 -right-0.5"></span>
+        📊 Impact
+      </button>
+      <button onclick="showPage('tech')"     class="nav-btn relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-gold-pale/60 hover:text-gold-pale transition-all duration-150" data-page="tech">
+        <span class="nav-dot w-1 h-1 rounded-full bg-gold absolute -top-0.5 -right-0.5"></span>
+        🛠️ Tech Stack
+      </button>
+    </div>
+
+    <button onclick="showPage('contact')" class="hidden md:block flex-shrink-0 bg-gold text-forest-800 font-bold text-xs px-5 py-2.5 rounded-xl hover:shadow-[0_6px_20px_rgba(233,168,24,.35)] hover:-translate-y-px transition-all duration-150">
+      Contact Us →
+    </button>
+
+    <button id="hamburger" class="md:hidden p-2 rounded-lg hover:bg-white/5 transition-colors flex flex-col gap-1.5" aria-label="Menu">
+      <span class="ham block w-5 h-0.5 bg-gold-pale/70 rounded transition-all duration-300"></span>
+      <span class="ham block w-5 h-0.5 bg-gold-pale/70 rounded transition-all duration-300"></span>
+      <span class="ham block w-5 h-0.5 bg-gold-pale/70 rounded transition-all duration-300"></span>
+    </button>
+  </div>
+</nav>
+
+<div id="mobile-menu" class="flex-shrink-0 flex-col border-b border-white/[.07] bg-forest-900/95 backdrop-blur-xl px-5 py-3 gap-1 z-40">
+  <button onclick="showPage('home');closeMobile()"     class="text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gold-pale/70 hover:text-gold-pale hover:bg-white/5 transition-all">🏠 Home</button>
+  <button onclick="showPage('problem');closeMobile()"  class="text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gold-pale/70 hover:text-gold-pale hover:bg-white/5 transition-all">⚠️ Problem</button>
+  <button onclick="showPage('features');closeMobile()" class="text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gold-pale/70 hover:text-gold-pale hover:bg-white/5 transition-all">✨ Features</button>
+  <button onclick="showPage('impact');closeMobile()"   class="text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gold-pale/70 hover:text-gold-pale hover:bg-white/5 transition-all">📊 Impact</button>
+  <button onclick="showPage('tech');closeMobile()"     class="text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gold-pale/70 hover:text-gold-pale hover:bg-white/5 transition-all">🛠️ Tech Stack</button>
+  <button onclick="showPage('contact');closeMobile()"  class="mt-1 w-full text-center bg-gold text-forest-800 font-bold text-sm px-5 py-3 rounded-xl">Contact Us →</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: HOME
+══════════════════════════════════════ -->
+<div id="page-home" class="page active page-scroll flex-1">
+  <section class="hero-mesh relative min-h-full grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+
+    <div class="relative z-10 flex flex-col justify-center px-8 sm:px-14 lg:px-20 py-20">
+      <div class="animate-fade-up inline-flex items-center gap-2 bg-forest-500/15 border border-forest-500/30 rounded-full px-4 py-2 w-fit mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-forest-500 animate-blink"></span>
+        <span class="text-forest-500 text-xs font-semibold tracking-widest uppercase">Proposed System Concept</span>
+      </div>
+
+      <h1 class="animate-fade-up1 font-display font-black text-5xl sm:text-6xl lg:text-[70px] leading-[1.04] tracking-tight mb-7">
+        Empowering<br>
+        <em class="not-italic text-gold">Sugarcane</em><br>
+        Farmers Through<br>
+        Digital Innovation
+      </h1>
+
+      <p class="animate-fade-up2 text-[17px] font-light leading-relaxed text-gold-pale/65 max-w-md mb-12">
+        A mobile platform that digitizes the sugarcane supply chain — delivering real-time price visibility, digital payment tracking, and smarter harvest scheduling directly into farmers' hands.
+      </p>
+
+      <div class="animate-fade-up3 flex flex-wrap gap-4">
+        <button onclick="showPage('features')" class="bg-gold text-forest-800 font-bold text-sm px-8 py-4 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(233,168,24,.35)] transition-all duration-200">Explore Features →</button>
+        <button onclick="showPage('problem')"  class="border border-gold-pale/25 text-gold-pale font-medium text-sm px-8 py-4 rounded-xl hover:border-gold-pale/50 hover:bg-gold-pale/5 transition-all duration-200">View Problem Context</button>
+      </div>
+    </div>
+
+    <div class="hidden lg:flex items-center justify-center relative z-10 py-20 pr-20">
+      <div class="relative w-[265px]">
+        <div class="animate-float absolute -left-24 top-1/3 bg-gold-pale/[.06] backdrop-blur-md border border-gold-pale/10 rounded-2xl px-4 py-3 text-sm font-medium whitespace-nowrap z-20">
+          <p class="text-[10px] text-gold-pale/40 mb-0.5">Alert</p>
+          🚨 Import advisory issued
+        </div>
+        <div class="animate-float-d absolute -right-20 bottom-1/4 bg-gold-pale/[.06] backdrop-blur-md border border-gold-pale/10 rounded-2xl px-4 py-3 text-sm font-medium whitespace-nowrap z-20">
+          <p class="text-[10px] text-gold-pale/40 mb-0.5">Payment</p>
+          ✅ ₱18,400 Received
+        </div>
+        <div class="bg-[#111] rounded-[44px] p-4 shadow-[0_40px_100px_rgba(0,0,0,.6),0_0_0_1px_rgba(255,255,255,.08)]">
+          <div class="phone-notch"></div>
+          <div class="bg-[#0f1f17] rounded-[30px] overflow-hidden h-[490px] flex flex-col">
+            <div class="bg-gradient-to-br from-forest-800 to-forest-700 px-5 pt-5 pb-4">
+              <p class="text-[10px] font-semibold tracking-widest uppercase text-forest-500/80 mb-1">Mill Gate Price — Today</p>
+              <p class="font-display text-[28px] font-bold text-gold leading-none">₱2,450 <span class="text-sm font-normal text-gold-pale/50">/LKg</span></p>
+              <p class="text-[11px] text-gold-pale/45 mt-1">Victorias Milling Co. · Updated 3 min ago</p>
+              <span class="inline-flex items-center gap-1.5 bg-forest-500/20 rounded px-2 py-1 text-[11px] font-semibold text-forest-500 mt-2">▲ +₱80 from yesterday</span>
+            </div>
+            <div class="flex-1 p-3.5 flex flex-col gap-2.5 overflow-hidden">
+              <div class="bg-white/5 border border-white/[.07] rounded-2xl p-3">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gold-pale/40 mb-1">🎫 Digital Quedan</p>
+                <p class="text-[13px] font-semibold">QDN-2025-08841</p>
+                <p class="text-[11px] text-gold-pale/40 mt-0.5">Batch: 12.4 MT · Filed June 12</p>
+                <span class="inline-flex items-center gap-1.5 bg-gold/15 rounded-full px-2.5 py-1 text-[11px] font-semibold text-gold mt-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gold animate-blink"></span>Ready for Release
+                </span>
+              </div>
+              <div class="bg-white/5 border border-white/[.07] rounded-2xl p-3">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gold-pale/40 mb-1">🚛 Harvest Schedule</p>
+                <p class="text-[13px] font-semibold">Slot: June 15 · 7:00 AM</p>
+                <p class="text-[11px] text-gold-pale/40 mt-0.5">Gate 3 · Est. wait: ~25 mins</p>
+              </div>
+              <div class="bg-white/5 border border-white/[.07] rounded-2xl p-3">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gold-pale/40 mb-1">💳 E-Wallet Balance</p>
+                <p class="text-[13px] font-semibold">₱42,800.00</p>
+                <p class="text-[11px] text-gold-pale/40 mt-0.5">Last credit: June 10 · GCash linked</p>
+              </div>
+            </div>
+            <div class="flex justify-around items-center px-2 py-3 border-t border-white/[.06] bg-black/30">
+              <span class="text-xl">🏠</span><span class="text-xl opacity-40">📈</span><span class="text-xl opacity-40">🎫</span><span class="text-xl opacity-40">👤</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: PROBLEM
+══════════════════════════════════════ -->
+<div id="page-problem" class="page page-scroll flex-1">
+  <section class="dark-mesh min-h-full">
+    <div class="max-w-6xl mx-auto px-8 sm:px-14 py-16">
+
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4"><div class="w-8 h-px bg-gold"></div><span class="text-gold text-[11px] font-bold tracking-[.12em] uppercase">The Problem</span></div>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold leading-tight mb-4">Farmers Are Being Left Behind</h2>
+        <p class="text-[17px] font-light leading-relaxed text-gold-pale/60 max-w-2xl">
+          Local sugarcane farmers in Western Visayas face a deeply inefficient system. Without digital infrastructure, they are at the mercy of delayed information, manual processes, and unpredictable market disruptions.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="flex gap-5 items-start bg-white/[.03] border border-white/[.05] border-l-2 border-l-red-400/40 rounded-r-2xl rounded-l-none px-6 py-6 hover:border-l-red-400/70 transition-colors duration-200">
+          <span class="text-3xl flex-shrink-0">⏰</span>
+          <div>
+            <h4 class="text-base font-semibold mb-2">Delayed Price Information</h4>
+            <p class="text-sm text-gold-pale/50 leading-relaxed">Farmers receive mill gate price updates too late to make informed decisions about when and where to sell their harvest. By the time they know prices have dropped, it's already too late to delay delivery.</p>
+          </div>
+        </div>
+        <div class="flex gap-5 items-start bg-white/[.03] border border-white/[.05] border-l-2 border-l-red-400/40 rounded-r-2xl rounded-l-none px-6 py-6 hover:border-l-red-400/70 transition-colors duration-200">
+          <span class="text-3xl flex-shrink-0">🚗</span>
+          <div>
+            <h4 class="text-base font-semibold mb-2">Long-Distance Travel for Payment</h4>
+            <p class="text-sm text-gold-pale/50 leading-relaxed">Farmers must travel long distances to sugar centrals and wait in line for hours just to receive their quedan documents and collect payment, losing an entire workday in the process.</p>
+          </div>
+        </div>
+        <div class="flex gap-5 items-start bg-white/[.03] border border-white/[.05] border-l-2 border-l-red-400/40 rounded-r-2xl rounded-l-none px-6 py-6 hover:border-l-red-400/70 transition-colors duration-200">
+          <span class="text-3xl flex-shrink-0">📦</span>
+          <div>
+            <h4 class="text-base font-semibold mb-2">No Market Foresight on Importation</h4>
+            <p class="text-sm text-gold-pale/50 leading-relaxed">Lack of data on sugar importation schedules causes farmers to unknowingly harvest during periods of excess supply and when imported sugar floods the market, local prices crash significantly.</p>
+          </div>
+        </div>
+        <div class="flex gap-5 items-start bg-white/[.03] border border-white/[.05] border-l-2 border-l-red-400/40 rounded-r-2xl rounded-l-none px-6 py-6 hover:border-l-red-400/70 transition-colors duration-200">
+          <span class="text-3xl flex-shrink-0">🚛</span>
+          <div>
+            <h4 class="text-base font-semibold mb-2">Uncoordinated Truck Deliveries</h4>
+            <p class="text-sm text-gold-pale/50 leading-relaxed">Without scheduling, trucks from multiple farms arrive simultaneously at the central, creating massive congestion. Drivers wait for hours, burning fuel, wasting time, and reducing daily capacity.</p>
+          </div>
+        </div>
+        <div class="flex gap-5 items-start bg-white/[.03] border border-white/[.05] border-l-2 border-l-red-400/40 rounded-r-2xl rounded-l-none px-6 py-6 hover:border-l-red-400/70 transition-colors duration-200">
+          <span class="text-3xl flex-shrink-0">📄</span>
+          <div>
+            <h4 class="text-base font-semibold mb-2">Paper-Based Quedan Records</h4>
+            <p class="text-sm text-gold-pale/50 leading-relaxed">All quedan documentation is done manually on paper — prone to loss, damage, forgery, and errors. Farmers have no easy way to verify or track the status of their batch once it leaves the farm.</p>
+          </div>
+        </div>
+        <div class="flex gap-5 items-start bg-white/[.03] border border-white/[.05] border-l-2 border-l-red-400/40 rounded-r-2xl rounded-l-none px-6 py-6 hover:border-l-red-400/70 transition-colors duration-200">
+          <span class="text-3xl flex-shrink-0">💸</span>
+          <div>
+            <h4 class="text-base font-semibold mb-2">Delayed Cash Payments</h4>
+            <p class="text-sm text-gold-pale/50 leading-relaxed">Even after queuing for their quedan, farmers often wait days or weeks for their cash payment to be processed. This cash flow gap creates financial strain, especially for small-scale farming families.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-10 flex justify-end">
+        <button onclick="showPage('features')" class="bg-gold text-forest-800 font-bold text-sm px-7 py-3.5 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(233,168,24,.35)] transition-all duration-200">
+          See the Solution → Features
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: FEATURES
+══════════════════════════════════════ -->
+<div id="page-features" class="page page-scroll flex-1">
+  <section class="bg-forest-800 min-h-full">
+    <div class="max-w-6xl mx-auto px-8 sm:px-14 py-16">
+
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4"><div class="w-8 h-px bg-gold"></div><span class="text-gold text-[11px] font-bold tracking-[.12em] uppercase">The Solution</span></div>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold leading-tight mb-4">Five Core Features</h2>
+        <p class="text-[17px] font-light leading-relaxed text-gold-pale/60 max-w-2xl">
+          A unified mobile application that replaces every inefficient touchpoint in the traditional sugarcane supply chain with a seamless digital experience.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="group relative bg-white/[.04] border border-white/[.07] rounded-3xl p-7 overflow-hidden hover:-translate-y-1 hover:border-gold/25 hover:shadow-[0_20px_50px_rgba(0,0,0,.35)] transition-all duration-200">
+          <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-light to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <p class="font-mono text-[11px] text-gold-pale/20 tracking-widest mb-4">01</p>
+          <div class="w-11 h-11 rounded-2xl bg-gold/15 flex items-center justify-center text-xl mb-4">📈</div>
+          <h3 class="text-[18px] font-bold mb-2.5">Real-Time Price Monitoring</h3>
+          <p class="text-sm text-gold-pale/50 leading-relaxed">Instant push notifications whenever mill gate prices fluctuate. Compare prices across multiple sugar centrals and make informed selling decisions from any location.</p>
+          <span class="inline-block mt-4 bg-gold/15 text-gold text-[11px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg">Live Updates</span>
+        </div>
+
+        <div class="group relative bg-white/[.04] border border-white/[.07] rounded-3xl p-7 overflow-hidden hover:-translate-y-1 hover:border-forest-500/25 hover:shadow-[0_20px_50px_rgba(0,0,0,.35)] transition-all duration-200">
+          <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-forest-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <p class="font-mono text-[11px] text-gold-pale/20 tracking-widest mb-4">02</p>
+          <div class="w-11 h-11 rounded-2xl bg-forest-500/15 flex items-center justify-center text-xl mb-4">🎫</div>
+          <h3 class="text-[18px] font-bold mb-2.5">Digital Quedan Tracker</h3>
+          <p class="text-sm text-gold-pale/50 leading-relaxed">Every quedan is issued digitally. View batch details and real-time status — <span class="text-gold-pale/80">Processing → Ready for Release → Paid</span> — directly in the app. No paper, no guessing.</p>
+          <span class="inline-block mt-4 bg-forest-500/15 text-forest-500 text-[11px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg">Paperless</span>
+        </div>
+
+        <div class="group relative bg-white/[.04] border border-white/[.07] rounded-3xl p-7 overflow-hidden hover:-translate-y-1 hover:border-sky-400/25 hover:shadow-[0_20px_50px_rgba(0,0,0,.35)] transition-all duration-200 md:col-span-2 lg:col-span-1">
+          <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <p class="font-mono text-[11px] text-gold-pale/20 tracking-widest mb-4">03</p>
+          <div class="w-11 h-11 rounded-2xl bg-sky-400/15 flex items-center justify-center text-xl mb-4">💳</div>
+          <h3 class="text-[18px] font-bold mb-2.5">E-Wallet &amp; Bank Integration</h3>
+          <p class="text-sm text-gold-pale/50 leading-relaxed mb-4">Payment transfers directly to GCash, Maya, BPI, or UnionBank upon quedan release. No physical collection, no queuing for cash.</p>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2.5 bg-white/[.04] rounded-xl px-3.5 py-2.5"><span class="text-lg">⚡</span><div><p class="text-[13px] font-bold leading-none mb-0.5">Instant</p><p class="text-[11px] text-gold-pale/40">Transfer upon release</p></div></div>
+            <div class="flex items-center gap-2.5 bg-white/[.04] rounded-xl px-3.5 py-2.5"><span class="text-lg">🔗</span><div><p class="text-[13px] font-bold leading-none mb-0.5">Multi-bank</p><p class="text-[11px] text-gold-pale/40">GCash, Maya, major PH banks</p></div></div>
+            <div class="flex items-center gap-2.5 bg-white/[.04] rounded-xl px-3.5 py-2.5"><span class="text-lg">🔒</span><div><p class="text-[13px] font-bold leading-none mb-0.5">Secure</p><p class="text-[11px] text-gold-pale/40">BSP-compliant transfers</p></div></div>
+          </div>
+          <span class="inline-block mt-4 bg-sky-400/15 text-sky-300 text-[11px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg">No More Queues</span>
+        </div>
+
+        <div class="group relative bg-white/[.04] border border-white/[.07] rounded-3xl p-7 overflow-hidden hover:-translate-y-1 hover:border-red-400/25 hover:shadow-[0_20px_50px_rgba(0,0,0,.35)] transition-all duration-200">
+          <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-red-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <p class="font-mono text-[11px] text-gold-pale/20 tracking-widest mb-4">04</p>
+          <div class="w-11 h-11 rounded-2xl bg-red-400/15 flex items-center justify-center text-xl mb-4">🚨</div>
+          <h3 class="text-[18px] font-bold mb-2.5">Importation Impact Alerts</h3>
+          <p class="text-sm text-gold-pale/50 leading-relaxed">Monitors government announcements and importation data to warn farmers in advance. Data-driven recommendations identify optimal harvest windows to avoid price crashes during oversupply periods.</p>
+          <span class="inline-block mt-4 bg-red-400/15 text-red-300 text-[11px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg">Market Intelligence</span>
+        </div>
+
+        <div class="group relative bg-white/[.04] border border-white/[.07] rounded-3xl p-7 overflow-hidden hover:-translate-y-1 hover:border-purple-400/25 hover:shadow-[0_20px_50px_rgba(0,0,0,.35)] transition-all duration-200">
+          <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <p class="font-mono text-[11px] text-gold-pale/20 tracking-widest mb-4">05</p>
+          <div class="w-11 h-11 rounded-2xl bg-purple-400/15 flex items-center justify-center text-xl mb-4">🗓️</div>
+          <h3 class="text-[18px] font-bold mb-2.5">Harvest Scheduling System</h3>
+          <p class="text-sm text-gold-pale/50 leading-relaxed">Instead of all trucks arriving simultaneously, the app assigns each farm a delivery time slot. This distributes traffic evenly, eliminates congestion, and dramatically cuts gate waiting times.</p>
+          <span class="inline-block mt-4 bg-purple-400/15 text-purple-300 text-[11px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg">Slot Booking</span>
+        </div>
+      </div>
+
+      <div class="mt-10 flex justify-end">
+        <button onclick="showPage('impact')" class="bg-gold text-forest-800 font-bold text-sm px-7 py-3.5 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(233,168,24,.35)] transition-all duration-200">
+          See the Impact →
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: IMPACT
+══════════════════════════════════════ -->
+<div id="page-impact" class="page page-scroll flex-1">
+  <section class="amber-mesh min-h-full">
+    <div class="max-w-6xl mx-auto px-8 sm:px-14 py-16">
+
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4"><div class="w-8 h-px bg-gold"></div><span class="text-gold text-[11px] font-bold tracking-[.12em] uppercase">Expected Impact</span></div>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold leading-tight mb-4">Measurable Change for Filipino Farmers</h2>
+        <p class="text-[17px] font-light leading-relaxed text-gold-pale/60 max-w-2xl">
+          By removing information gaps and physical barriers, the platform targets real, quantifiable improvements across the entire sugarcane supply chain — from field to payment.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div class="border border-white/[.07] bg-white/[.03] rounded-2xl p-6 hover:border-gold/30 transition-colors duration-200 text-center">
+          <p class="font-display text-4xl font-black text-gold leading-none mb-2">0 hrs</p>
+          <p class="text-sm text-gold-pale/50 leading-snug">Queuing time for payment collection</p>
+        </div>
+        <div class="border border-white/[.07] bg-white/[.03] rounded-2xl p-6 hover:border-gold/30 transition-colors duration-200 text-center">
+          <p class="font-display text-4xl font-black text-gold leading-none mb-2">100%</p>
+          <p class="text-sm text-gold-pale/50 leading-snug">Digital quedan issuance, paperless records</p>
+        </div>
+        <div class="border border-white/[.07] bg-white/[.03] rounded-2xl p-6 hover:border-gold/30 transition-colors duration-200 text-center">
+          <p class="font-display text-3xl font-black text-gold leading-none mb-2">&lt;5 min</p>
+          <p class="text-sm text-gold-pale/50 leading-snug">Price alert delivery after market change</p>
+        </div>
+        <div class="border border-white/[.07] bg-white/[.03] rounded-2xl p-6 hover:border-gold/30 transition-colors duration-200 text-center">
+          <p class="font-display text-4xl font-black text-gold leading-none mb-2">↑30%</p>
+          <p class="text-sm text-gold-pale/50 leading-snug">Reduction in truck congestion at centrals</p>
+        </div>
+      </div>
+
+      <div class="bg-white/[.04] border border-white/[.07] rounded-3xl p-8 mb-6">
+        <h3 class="text-[18px] font-bold mb-4 flex items-center gap-2">🌾 Who Benefits</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-white/[.04] rounded-2xl p-5">
+            <p class="text-2xl mb-3">👨‍🌾</p>
+            <h4 class="font-semibold text-sm mb-1.5">Smallholder Farmers</h4>
+            <p class="text-xs text-gold-pale/50 leading-relaxed">Save time, receive payments faster, and make smarter harvest decisions with market data at their fingertips.</p>
+          </div>
+          <div class="bg-white/[.04] rounded-2xl p-5">
+            <p class="text-2xl mb-3">🏭</p>
+            <h4 class="font-semibold text-sm mb-1.5">Sugar Centrals</h4>
+            <p class="text-xs text-gold-pale/50 leading-relaxed">Reduce gate congestion, streamline quedan processing, and improve operational efficiency with scheduled deliveries.</p>
+          </div>
+          <div class="bg-white/[.04] rounded-2xl p-5">
+            <p class="text-2xl mb-3">🏛️</p>
+            <h4 class="font-semibold text-sm mb-1.5">Government Agencies</h4>
+            <p class="text-xs text-gold-pale/50 leading-relaxed">Access real-time supply chain data to inform policy, monitor import impact, and support the sugar industry effectively.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/[.04] border border-white/[.07] rounded-3xl p-8">
+        <h3 class="text-[18px] font-bold mb-3 flex items-center gap-2">📍 Target Coverage</h3>
+        <p class="text-sm text-gold-pale/55 leading-relaxed max-w-2xl">
+          Primary target beneficiaries are smallholder sugarcane farmers across <strong class="text-gold-pale">Western Visayas</strong>, particularly those in <strong class="text-gold-pale">Negros Occidental</strong> — the heart of the Philippine sugar industry where the majority of registered farmers still rely on entirely manual processes.
+        </p>
+      </div>
+
+      <div class="mt-10 flex justify-end">
+        <button onclick="showPage('tech')" class="bg-gold text-forest-800 font-bold text-sm px-7 py-3.5 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(233,168,24,.35)] transition-all duration-200">
+          See Tech Stack →
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: TECH STACK
+══════════════════════════════════════ -->
+<div id="page-tech" class="page page-scroll flex-1">
+  <section class="bg-forest-800 min-h-full">
+    <div class="max-w-6xl mx-auto px-8 sm:px-14 py-16">
+
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4"><div class="w-8 h-px bg-gold"></div><span class="text-gold text-[11px] font-bold tracking-[.12em] uppercase">Technical Approach</span></div>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold leading-tight mb-4">Proposed Technology Stack</h2>
+        <p class="text-[17px] font-light leading-relaxed text-gold-pale/60 max-w-2xl">
+          Built for low-bandwidth rural environments — offline-first, lightweight data usage, and compatible with entry-level Android devices common among farming communities.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+        <div class="bg-white/[.04] border border-white/[.07] rounded-2xl p-6 hover:border-forest-500/25 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-forest-500/15 flex items-center justify-center text-lg mb-4">📱</div>
+          <h3 class="text-[15px] font-bold mb-3">Frontend / Mobile</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">React Native</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Expo</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Offline-First</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Android + iOS</span>
+          </div>
+        </div>
+        <div class="bg-white/[.04] border border-white/[.07] rounded-2xl p-6 hover:border-sky-400/25 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-sky-400/15 flex items-center justify-center text-lg mb-4">⚙️</div>
+          <h3 class="text-[15px] font-bold mb-3">Backend / API</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Node.js</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Express.js</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">REST API</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">WebSocket</span>
+          </div>
+        </div>
+        <div class="bg-white/[.04] border border-white/[.07] rounded-2xl p-6 hover:border-purple-400/25 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-purple-400/15 flex items-center justify-center text-lg mb-4">🗄️</div>
+          <h3 class="text-[15px] font-bold mb-3">Database</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">PostgreSQL</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Redis (Cache)</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">SQLite (Local)</span>
+          </div>
+        </div>
+        <div class="bg-white/[.04] border border-white/[.07] rounded-2xl p-6 hover:border-gold/25 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center text-lg mb-4">💳</div>
+          <h3 class="text-[15px] font-bold mb-3">Payments</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">GCash API</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Maya API</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">BSP Open Finance</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">BancNet</span>
+          </div>
+        </div>
+        <div class="bg-white/[.04] border border-white/[.07] rounded-2xl p-6 hover:border-red-400/25 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-red-400/15 flex items-center justify-center text-lg mb-4">🔔</div>
+          <h3 class="text-[15px] font-bold mb-3">Notifications</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Firebase FCM</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">SMS (Globe)</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">SMS (PLDT)</span>
+          </div>
+        </div>
+        <div class="bg-white/[.04] border border-white/[.07] rounded-2xl p-6 hover:border-forest-500/25 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-forest-500/15 flex items-center justify-center text-lg mb-4">☁️</div>
+          <h3 class="text-[15px] font-bold mb-3">Infrastructure</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">AWS / GCP</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">Docker</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">QR Generation</span>
+            <span class="bg-white/[.05] border border-white/[.08] rounded-full px-3 py-1 text-[12px] text-gold-pale/60">CI/CD Pipeline</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-10 flex justify-end">
+        <button onclick="showPage('contact')" class="bg-gold text-forest-800 font-bold text-sm px-7 py-3.5 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(233,168,24,.35)] transition-all duration-200">
+          Contact the Team →
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: CONTACT
+══════════════════════════════════════ -->
+<div id="page-contact" class="page page-scroll flex-1">
+  <section class="footer-mesh min-h-full flex items-center justify-center py-20">
+    <div class="max-w-2xl mx-auto px-8 text-center">
+      <div class="inline-flex items-center gap-2 bg-forest-500/15 border border-forest-500/30 rounded-full px-4 py-2 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-forest-500 animate-blink"></span>
+        <span class="text-forest-500 text-xs font-semibold tracking-widest uppercase">Get in Touch</span>
+      </div>
+
+      <h2 class="font-display font-black text-5xl sm:text-6xl leading-[1.06] mb-6">
+        From <em class="not-italic text-gold">Field to Phone</em> —<br>Farmers Deserve Better
+      </h2>
+      <p class="text-[17px] text-gold-pale/55 mb-12 leading-relaxed">
+        The sugarcane industry sustains hundreds of thousands of Filipino families. Digitizing its supply chain is not just an innovation — it is a matter of economic justice.
+      </p>
+
+      <div class="bg-white/[.04] border border-white/[.07] rounded-3xl p-8 mb-8 text-left">
+        <h3 class="text-[17px] font-bold mb-5 text-center">Project Team: Techno Monarchs</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex items-center gap-3 bg-white/[.04] rounded-2xl px-4 py-3.5">
+            <div class="w-9 h-9 rounded-xl bg-gold/20 flex items-center justify-center text-lg flex-shrink-0">👨‍💻</div>
+            <div><p class="text-sm font-semibold leading-none mb-0.5">Project Manager</p><p class="text-xs text-gold-pale/45">Earl Andri Parandas</p></div>
+          </div>
+          <div class="flex items-center gap-3 bg-white/[.04] rounded-2xl px-4 py-3.5">
+            <div class="w-9 h-9 rounded-xl bg-forest-500/20 flex items-center justify-center text-lg flex-shrink-0">🎨</div>
+            <div><p class="text-sm font-semibold leading-none mb-0.5">UI/UX Designer</p><p class="text-xs text-gold-pale/45">Rodny Mendoza</p></div>
+          </div>
+          <div class="flex items-center gap-3 bg-white/[.04] rounded-2xl px-4 py-3.5">
+            <div class="w-9 h-9 rounded-xl bg-sky-400/20 flex items-center justify-center text-lg flex-shrink-0">📊</div>
+            <div><p class="text-sm font-semibold leading-none mb-0.5">Systems Analyst</p><p class="text-xs text-gold-pale/45">Stephanie Alejano</p></div>
+          </div>
+          <div class="flex items-center gap-3 bg-white/[.04] rounded-2xl px-4 py-3.5">
+            <div class="w-9 h-9 rounded-xl bg-purple-400/20 flex items-center justify-center text-lg flex-shrink-0">🌾</div>
+            <div><p class="text-sm font-semibold leading-none mb-0.5">Programmer</p><p class="text-xs text-gold-pale/45">Yuan Bacolina</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-4 justify-center">
+        <button class="bg-gold text-forest-800 font-bold text-sm px-8 py-4 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(233,168,24,.35)] transition-all duration-200">
+          📄 Download Proposal PDF
+        </button>
+        <button class="border border-gold-pale/25 text-gold-pale font-medium text-sm px-8 py-4 rounded-xl hover:border-gold-pale/50 hover:bg-gold-pale/5 transition-all duration-200">
+          ✉️ Send Email
+        </button>
+      </div>
+
+      <p class="mt-14 text-[11px] text-gold-pale/20 tracking-widest">
+        SUGARQUEUE TO CLICKS · WESTERN VISAYAS · 2025
+      </p>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════ JS ══════════════ -->
+<script>
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + id);
+    if (target) {
+      target.classList.add('active');
+      target.scrollTop = 0;
+    }
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      const isActive = btn.dataset.page === id;
+      btn.classList.toggle('active', isActive);
+      if (isActive) {
+        btn.classList.remove('text-gold-pale/60');
+        btn.classList.add('text-gold-pale');
+      } else {
+        btn.classList.add('text-gold-pale/60');
+        btn.classList.remove('text-gold-pale');
+      }
+    });
+  }
+
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const hams = document.querySelectorAll('.ham');
+  let open = false;
+
+  hamburger.addEventListener('click', () => {
+    open = !open;
+    mobileMenu.classList.toggle('open', open);
+    hams[0].style.transform = open ? 'translateY(8px) rotate(45deg)' : '';
+    hams[1].style.opacity = open ? '0' : '';
+    hams[2].style.transform = open ? 'translateY(-8px) rotate(-45deg)' : '';
+  });
+
+  function closeMobile() {
+    open = false;
+    mobileMenu.classList.remove('open');
+    hams.forEach(h => { h.style.transform = ''; h.style.opacity = ''; });
+  }
+</script>
+</body>
+</html>
